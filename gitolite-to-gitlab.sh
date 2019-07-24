@@ -71,7 +71,7 @@ create_repo () {
 push_repo () {
     lite_repo=$1; lab_repo=$2
 
-    lab_uri=git@$gitlab_domain:${gitlab_user}/hubzero-packaging-repositories/${lab_repo}.git
+    lab_uri=git@$gitlab_domain:hubzero-packaging-repositories/${lab_repo}.git
     log "$lite_repo@gitlab: upload to hubzero-packaging-repositories/$lab_uri"
 
     cd $cwd/tmp/$lab_repo
