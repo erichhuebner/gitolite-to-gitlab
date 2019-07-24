@@ -2,7 +2,7 @@
 #
 # A script to migrate gitolite repositories to gitlab.
 #
-# Downloads the repository list from the `gitolite-admin` repository and mirrors all repositories to a gitlab host
+# Downloads the repository list from the `gitolite` repository and mirrors all repositories to a gitlab host
 # under a given user as a private repo.
 #
 # https://github.com/rndstr/gitolite-to-gitlab
@@ -10,12 +10,12 @@
 usage () {
     exec 4<&1
     exec 1>&2
-    echo "usage: $(basename $0) [-i] <gitolite-admin-uri> <gitlab-url> <gitlab-user> <gitlab-token>"
+    echo "usage: $(basename $0) [-i] <gitolite-uri> <gitlab-url> <gitlab-user> <gitlab-token>"
     echo
     echo "  -i  Confirm each repository to migrate"
     echo "  -h  Display this help"
     echo
-    echo "  gitolite-admin-uri  Repository URI for the gitolite-admin repo (e.g., gitolite@example.com:gitolite-admin.git)"
+    echo "  gitolite-uri  Repository URI for the gitolite repo (e.g., gitolite@example.com:gitolite-admin.git)"
     echo "  gitlab-url          Where your GitLab is hosted (e.g., https://www.gitlab.com)"
     echo "  gitlab-user         Username for which the projects should be created"
     echo "  gitlab-token        Private token for the API to create the projects (see https://www.gitlab.com/profile/account)"
@@ -105,7 +105,7 @@ if [ $# -ne 4 ]; then
 fi
 
 
-gitolite_admin_uri=$1
+gitolite_uri=$1
 gitlab_url=$2
 gitlab_user=$3
 gitlab_token=$4
@@ -118,7 +118,7 @@ if [[ ! $gitlab_url == *"//"* ]]; then
 fi
 
 if [ -z $gitolite_base_uri ]; then
-    gitolite_base_uri=${gitolite_admin_uri%%:*}
+    gitolite_base_uri=${gitolite_uri%%:*}
 fi
 
 test -z "$gitolite_base_uri" && { error "cannot figure out gitolite base uri"; exit 1; }
@@ -126,21 +126,21 @@ test -z "$gitolite_base_uri" && { error "cannot figure out gitolite base uri"; e
 
 # directories
 cwd=$(cd $(dirname $0); pwd)
-glwd=$cwd/tmp/gitolite-admin
-
+glwd=$cwd/tmp/gitolite
 
 mkdir "$cwd/tmp" 2>/dev/null
 
 # get repository list
 set -e
-log "gitolite_admin: retrieving repo list"
-if [ -d $glwd ]; then
-    log "gitolite-admin: found"
-else
-    log "gitolite-admin@gitolite: download from $gitolite_admin_uri"
-    git clone $gitolite_admin_uri "$glwd"
-fi
-repos=$(sed -n 's/^repo\s\+\(.\+\)$/\1/p' $glwd/conf/gitolite.conf | grep -v gitolite-admin)
+# log "gitolite_admin: retrieving repo list"
+# if [ -d $glwd ]; then
+#     log "gitolite-admin: found"
+# else
+#     log "gitolite-admin@gitolite: download from $gitolite_admin_uri"
+#     git clone $gitolite_admin_uri "$glwd"
+# fi
+# repos=$(sed -n 's/^repo\s\+\(.\+\)$/\1/p' $glwd/conf/gitolite.conf | grep -v gitolite-admin)
+repos=$(ssh $gitolite_uri | tail -n +3 | cut -f2)
 
 # migrate repositories
 count=$(set -- $repos; echo $#)
