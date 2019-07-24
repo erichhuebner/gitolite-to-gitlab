@@ -61,7 +61,7 @@ create_repo () {
     log "$lite_repo@gitlab: create project $gitlab_url/$gitlab_user/$lab_repo"
 
     set +e
-    body=$(curl --silent --header "PRIVATE-TOKEN: $gitlab_token" "$gitlab_url/api/v4/projects" --data "name=$lab_repo&path=$lab_repo")
+    body=$(curl --silent --header "PRIVATE-TOKEN: $gitlab_token" "$gitlab_url/api/v4/projects" --data "name=$lab_repo&visibility=public&namespace_id=322&issues_enabled=yes&merge_requests_enabled=yes&jobs_enabled=yes&container_registry_enabled=yes")
     if [[ $body == *"has already been taken"* ]]; then
         log "$lite_repo@gitlab: already exists"
     fi
@@ -71,8 +71,8 @@ create_repo () {
 push_repo () {
     lite_repo=$1; lab_repo=$2
 
-    lab_uri=git@$gitlab_domain:${gitlab_user}/${lab_repo}.git
-    log "$lite_repo@gitlab: upload to $lab_uri"
+    lab_uri=git@$gitlab_domain:${gitlab_user}/hubzero-packaging-repositories/${lab_repo}.git
+    log "$lite_repo@gitlab: upload to hubzero-packaging-repositories/$lab_uri"
 
     cd $cwd/tmp/$lab_repo
     git push --mirror $lab_uri
